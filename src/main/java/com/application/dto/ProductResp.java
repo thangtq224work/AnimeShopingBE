@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,6 +34,7 @@ public class ProductResp {
     private MaterialDto material;
     private TypeProductDto typeProduct;
     private SupplierDto supplier;
+    private List<ImageDto> images;
     public ProductResp(Product product){
         this.id = product.getId();
         this.name = product.getName();
@@ -47,6 +50,17 @@ public class ProductResp {
         this.material = new MaterialDto(product.getMaterial());
         this.supplier = new SupplierDto(product.getSupplier());
         this.typeProduct = new TypeProductDto(product.getTypeProduct());
-
+        if(product.getProductImages() != null){
+            this.images = product.getProductImages().stream().map((img)->{
+                img.setUrl(buildUrl(img.getUrl()));
+                return new ImageDto(img);
+            }).collect(Collectors.toList());
+        }
+    }
+    private String buildUrl(String resource){
+        UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentServletMapping();
+        builder.pathSegment("product","show");
+        builder.queryParam("url",resource);
+        return builder.toUriString();
     }
 }

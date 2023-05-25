@@ -20,10 +20,12 @@ public class Category extends BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
+    private Boolean status = true;
 
     public Category(CategoryDto dto) {
         this.id = dto.getId();
         this.name = dto.getName();
+        this.status = dto.getStatus();
 
     }
 }

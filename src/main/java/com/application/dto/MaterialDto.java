@@ -13,9 +13,11 @@ import lombok.Setter;
 public class MaterialDto {
     private Integer id;
     private String name;
+    private Boolean status;
 
     public MaterialDto(Material material) {
         this.id = material.getId();
         this.name = material.getName();
+        this.status = material.getStatus();
     }
 }

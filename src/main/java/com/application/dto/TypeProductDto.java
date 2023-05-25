@@ -14,9 +14,12 @@ import lombok.Setter;
 public class TypeProductDto {
     private Integer id;
     private String name;
+    private Boolean status;
+
 
     public TypeProductDto(TypeProduct typeProduct) {
         this.id = typeProduct.getId();
         this.name = typeProduct.getName();
+        this.status = typeProduct.getStatus();
     }
 }

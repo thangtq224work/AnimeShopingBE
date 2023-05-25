@@ -13,9 +13,10 @@ import lombok.Setter;
 public class SupplierDto {
     private Integer id;
     private String name;
-
+    private Boolean status;
     public SupplierDto(Supplier supplier) {
         this.id = supplier.getId();
         this.name = supplier.getName();
+        this.status = supplier.getStatus();
     }
 }
