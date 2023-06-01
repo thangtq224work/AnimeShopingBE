@@ -17,7 +17,7 @@ public class MaterialController {
     @Autowired
     MaterialService materialService;
 
-    @GetMapping("/get-all")
+    @GetMapping("/get")
     public ResponseEntity<?> getAllProperty(@RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
                                             @RequestParam(name = "size", required = false, defaultValue = "5") Integer pageSize,
                                             @RequestParam(name = "search", required = false, defaultValue = "") String search,
@@ -27,7 +27,7 @@ public class MaterialController {
         return new ResponseEntity<>(materialService.getAll(pageable), HttpStatus.OK);
     }
 
-    @GetMapping("/get-all-")
+    @GetMapping("/get-all")
     public ResponseEntity<?> getAll() {
         return new ResponseEntity<>(materialService.getAll(), HttpStatus.OK);
     }

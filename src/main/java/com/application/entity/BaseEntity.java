@@ -1,9 +1,6 @@
 package com.application.entity;
 
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -16,6 +13,7 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
     @CreatedDate
+    @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     protected Date createAt;
     @LastModifiedDate
@@ -24,6 +22,7 @@ public class BaseEntity {
     @LastModifiedBy
     protected String updateBy;
     @CreatedBy
+    @Column(updatable = false)
     protected String createBy;
 
 

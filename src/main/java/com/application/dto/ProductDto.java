@@ -21,10 +21,10 @@ import java.util.List;
 public class ProductDto {
     private Integer id;
     @NotNull
-    @Length(min = 3,max = 100)
+    @Length(min = 3, max = 100)
     private String name;
     @NotNull
-    @Length(min = 0,max = 1000)
+    @Length(min = 0, max = 1000)
     private String description;
     @NotNull
     @Min(value = 1)

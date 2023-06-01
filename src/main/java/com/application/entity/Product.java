@@ -45,10 +45,12 @@ public class Product extends BaseEntity implements Serializable {
     private Supplier supplier;
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<ProductImage> productImages;
-    public Product(Integer id){
+
+    public Product(Integer id) {
         this.id = id;
     }
-    public Product(ProductDto dto){
+
+    public Product(ProductDto dto) {
         this.id = dto.getId();
         this.name = dto.getName();
         this.description = dto.getDescription();
@@ -60,7 +62,8 @@ public class Product extends BaseEntity implements Serializable {
         this.price = dto.getPrice();
         this.priceSell = dto.getPriceSell();
     }
-    public void convert(ProductDto dto){
+
+    public void convert(ProductDto dto) {
         this.id = dto.getId();
         this.name = dto.getName();
         this.description = dto.getDescription();

@@ -5,6 +5,7 @@ import com.application.dto.ProductResp;
 import com.application.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,7 +25,7 @@ public class ProductController {
     @Autowired
     ProductService productService;
 
-    @GetMapping("/get-all")
+    @GetMapping("/get")
     public ResponseEntity<?> getAllProperty(@RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
                                             @RequestParam(name = "size", required = false, defaultValue = "5") Integer pageSize,
                                             @RequestParam(name = "search", required = false, defaultValue = "") String search,
@@ -34,7 +35,7 @@ public class ProductController {
         return new ResponseEntity<>(productService.getAll(pageable), HttpStatus.OK);
     }
 
-    @GetMapping("/get-all-")
+    @GetMapping("/get-all")
     public ResponseEntity<?> getAll() {
         return new ResponseEntity<>(productService.getAll(), HttpStatus.OK);
     }
@@ -53,11 +54,14 @@ public class ProductController {
     public ResponseEntity<?> update(@RequestBody @Valid ProductDto dto) throws IOException {
         return new ResponseEntity<>(productService.update(dto), HttpStatus.ACCEPTED);
     }
+
     @PostMapping("/image-upload/{id}")
-    public ResponseEntity<?> uploadImages(@RequestParam("images") MultipartFile[] files,@PathVariable("id") Integer id) throws IOException {
-        return ResponseEntity.ok(productService.saveImages(files,id));
+    public ResponseEntity<?> uploadImages(@RequestParam("images") MultipartFile[] files, @PathVariable("id") Integer id) throws IOException {
+        return ResponseEntity.ok(productService.saveImages(files, id));
     }
+
     @GetMapping("/show")
+    @Cacheable(key = "#url", cacheManager = "imageCache", value = "images")
     public ResponseEntity<byte[]> show(@RequestParam("url") String url) throws IOException {
         Map<String, Object> map = productService.show(url);
         return ResponseEntity.ok()

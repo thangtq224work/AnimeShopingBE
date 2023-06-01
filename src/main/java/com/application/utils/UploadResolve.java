@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 @Slf4j
 public class UploadResolve {
     private final Path fileStorageLocation;
+
     public UploadResolve(UploadConfig uploadConfig) {
         this.fileStorageLocation = Paths.get(uploadConfig.getDirectory())
                 .toAbsolutePath().normalize();
@@ -27,14 +28,15 @@ public class UploadResolve {
             throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
         }
     }
+
     public Resource loadFile(String fileName) {
         Path path = fileStorageLocation.resolve(fileName).normalize();
         try {
             Resource resource = new UrlResource(path.toUri());
-            if(resource.exists()) {
+            if (resource.exists()) {
                 return resource;
             }
-            throw  new NotFoundException("Image not found");
+            throw new NotFoundException("Image not found");
         } catch (MalformedURLException e) {
             throw new RuntimeException("File not found");
         }

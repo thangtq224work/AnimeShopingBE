@@ -11,7 +11,8 @@ import lombok.*;
 public class ImageDto {
     private Integer id;
     private String url;
-    public ImageDto(ProductImage image){
+
+    public ImageDto(ProductImage image) {
         this.id = image.getId();
         this.url = image.getUrl();
     }

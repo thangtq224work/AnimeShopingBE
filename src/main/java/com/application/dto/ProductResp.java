@@ -35,7 +35,8 @@ public class ProductResp {
     private TypeProductDto typeProduct;
     private SupplierDto supplier;
     private List<ImageDto> images;
-    public ProductResp(Product product){
+
+    public ProductResp(Product product) {
         this.id = product.getId();
         this.name = product.getName();
         this.description = product.getDescription();
@@ -50,17 +51,18 @@ public class ProductResp {
         this.material = new MaterialDto(product.getMaterial());
         this.supplier = new SupplierDto(product.getSupplier());
         this.typeProduct = new TypeProductDto(product.getTypeProduct());
-        if(product.getProductImages() != null){
-            this.images = product.getProductImages().stream().map((img)->{
+        if (product.getProductImages() != null) {
+            this.images = product.getProductImages().stream().map((img) -> {
                 img.setUrl(buildUrl(img.getUrl()));
                 return new ImageDto(img);
             }).collect(Collectors.toList());
         }
     }
-    private String buildUrl(String resource){
+
+    private String buildUrl(String resource) {
         UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentServletMapping();
-        builder.pathSegment("product","show");
-        builder.queryParam("url",resource);
+        builder.pathSegment("product", "show");
+        builder.queryParam("url", resource);
         return builder.toUriString();
     }
 }

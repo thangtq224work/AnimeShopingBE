@@ -17,7 +17,7 @@ public class CategoryController {
     @Autowired
     CategoryService categoryService;
 
-    @GetMapping("/get-all")
+    @GetMapping("/get")
     public ResponseEntity<?> getAllCategory(@RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
                                             @RequestParam(name = "size", required = false, defaultValue = "5") Integer pageSize,
                                             @RequestParam(name = "search", required = false, defaultValue = "") String search,
@@ -27,7 +27,7 @@ public class CategoryController {
         return new ResponseEntity<>(categoryService.getAll(pageable), HttpStatus.OK);
     }
 
-    @GetMapping("/get-all-")
+    @GetMapping("/get-all")
     public ResponseEntity<?> getAll() {
         return new ResponseEntity<>(categoryService.getAll(), HttpStatus.OK);
     }

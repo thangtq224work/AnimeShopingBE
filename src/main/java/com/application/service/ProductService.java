@@ -18,9 +18,15 @@ public interface ProductService {
 
     ProductResp getById(Integer id);
 
+    PageData<ProductResp> getProduct(Integer page, Integer size, List<Integer> categories, List<Integer> materials, List<Integer> typeProduct, String sortBy, String direction);
+
     ProductResp insert(ProductDto dto);
 
+    Map<String, Object> getFilter();
+
     ProductResp update(ProductDto dto) throws IOException;
+
     List<ImageDto> saveImages(MultipartFile[] files, Integer id) throws IOException;
-    public Map<String,Object> show(String url) throws IOException;
+
+    public Map<String, Object> show(String url) throws IOException;
 }

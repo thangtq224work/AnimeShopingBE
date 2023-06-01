@@ -14,6 +14,7 @@ public class CategoryDto {
     private Integer id;
     private String name;
     private Boolean status;
+
     public CategoryDto(Category category) {
         this.id = category.getId();
         this.name = category.getName();
