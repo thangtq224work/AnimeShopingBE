@@ -1,13 +1,11 @@
 package com.application.controller;
 
+import com.application.dto.request.ProductInCartReq;
 import com.application.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,5 +29,9 @@ public class UserController {
                                         @RequestParam(name = "materials", required = false) List<Integer> materials,
                                         @RequestParam(name = "typeProducts", required = false) List<Integer> typeProducts) {
         return new ResponseEntity<>(productService.getProduct(page, pageSize, categories, materials, typeProducts, sortBy, direction), HttpStatus.OK);
+    }
+    @PostMapping("/get-cart")
+    public ResponseEntity<?> getCart(@RequestBody() List<ProductInCartReq> productInCartReqs) {
+        return new ResponseEntity<>(productService.getProductInCart(productInCartReqs), HttpStatus.OK);
     }
 }

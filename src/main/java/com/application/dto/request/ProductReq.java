@@ -1,9 +1,9 @@
-package com.application.dto;
+package com.application.dto.request;
 
+import com.application.dto.ImageDto;
 import com.application.entity.*;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ProductDto {
+public class ProductReq {
     private Integer id;
     @NotNull
     @Length(min = 3, max = 100)
@@ -39,6 +39,8 @@ public class ProductDto {
     @Min(value = 1)
     private Float length;
     @NotNull
+    private Integer quantity;
+    @NotNull
     @Min(value = 1)
     private BigDecimal price;
     @NotNull
@@ -57,7 +59,7 @@ public class ProductDto {
     private Integer supplier;
     private List<ImageDto> images;
 
-    public ProductDto(Product product) {
+    public ProductReq(Product product) {
         this.id = product.getId();
         this.name = product.getName();
         this.description = product.getDescription();
@@ -66,6 +68,7 @@ public class ProductDto {
         this.width = product.getWidth();
         this.height = product.getHeight();
         this.length = product.getLength();
+        this.quantity = product.getQuantity();
         this.price = product.getPrice();
         this.priceSell = product.getPriceSell();
         this.material = product.getMaterial().getId();

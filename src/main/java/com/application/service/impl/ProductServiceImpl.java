@@ -3,6 +3,9 @@ package com.application.service.impl;
 import com.application.common.PageData;
 import com.application.constant.Constant;
 import com.application.dto.*;
+import com.application.dto.request.ProductInCartReq;
+import com.application.dto.request.ProductReq;
+import com.application.dto.response.ProductResp;
 import com.application.entity.*;
 import com.application.exception.NotFoundException;
 import com.application.repository.*;
@@ -23,7 +26,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -84,7 +86,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResp insert(ProductDto dto) {
+    public ProductResp insert(ProductReq dto) {
         Category category = categoryRepo.findById(dto.getCategory()).orElseThrow(() -> new NotFoundException("Category not found"));
         Material material = materialRepo.findById(dto.getMaterial()).orElseThrow(() -> new NotFoundException("Material not found"));
         Supplier supplier = supplierRepo.findById(dto.getSupplier()).orElseThrow(() -> new NotFoundException("Supplier not found"));
@@ -99,7 +101,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResp update(ProductDto dto) throws IOException {
+    public ProductResp update(ProductReq dto) throws IOException {
         Product product = productRepo.findById(dto.getId()).orElseThrow(() -> new NotFoundException("Product not found"));
         Category category = categoryRepo.findById(dto.getCategory()).orElseThrow(() -> new NotFoundException("Category not found"));
         Material material = materialRepo.findById(dto.getMaterial()).orElseThrow(() -> new NotFoundException("Material not found"));
@@ -161,6 +163,30 @@ public class ProductServiceImpl implements ProductService {
         return uploadUtil.show(url);
     }
 
+    @Override
+    public List<ProductResp> getProductInCart(List<ProductInCartReq> productInCartReqs) {
+        Specification<Product> specification = (root, query, criteriaBuilder) -> {
+            Predicate categoryStatusPredicate = criteriaBuilder.isTrue(root.join("category",JoinType.INNER).get("status"));
+            Predicate typeStatusPredicate = criteriaBuilder.isTrue(root.join("typeProduct",JoinType.INNER).get("status"));
+            Predicate materialsStatusPredicate = criteriaBuilder.isTrue(root.join("material",JoinType.INNER).get("status"));
+            Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), Constant.Status.ACTIVE);
+            Predicate listPredicate = root.get("id").in(productInCartReqs.stream().map(i->i.getId()).collect(Collectors.toList()));
+            return criteriaBuilder.and(
+                    statusPredicate, categoryStatusPredicate, typeStatusPredicate, materialsStatusPredicate,listPredicate
+            );
+        };
+        List<Product> products = productRepo.findAll(specification);
+        for (ProductInCartReq product: productInCartReqs) {
+            for (Product p : products) {
+                if(p.getId() == product.getId()){
+                    p.setQuantity(product.getQuantity());
+                    break;
+                }
+            }
+        }
+        return products.stream().map(i->new ProductResp(i)).collect(Collectors.toList());
+    }
+
     private String buildUrl(String resource) {
         UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentServletMapping();
         builder.pathSegment("product", "show");
@@ -174,4 +200,5 @@ public class ProductServiceImpl implements ProductService {
         }
         return by.equals("priceSell") || by.equals("name") || by.equals("createAt");
     }
+
 }

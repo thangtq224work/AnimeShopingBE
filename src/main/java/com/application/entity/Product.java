@@ -1,7 +1,6 @@
 package com.application.entity;
 
-import com.application.dto.ProductDto;
-import com.application.dto.ProductResp;
+import com.application.dto.request.ProductReq;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +27,7 @@ public class Product extends BaseEntity implements Serializable {
     private Float width;
     private Float height;
     private Float length;
+    private Integer quantity;
     private BigDecimal price;
     private BigDecimal priceSell;
     private Boolean status;
@@ -50,7 +50,7 @@ public class Product extends BaseEntity implements Serializable {
         this.id = id;
     }
 
-    public Product(ProductDto dto) {
+    public Product(ProductReq dto) {
         this.id = dto.getId();
         this.name = dto.getName();
         this.description = dto.getDescription();
@@ -60,10 +60,11 @@ public class Product extends BaseEntity implements Serializable {
         this.length = dto.getLength();
         this.width = dto.getWidth();
         this.price = dto.getPrice();
+        this.quantity = dto.getQuantity();
         this.priceSell = dto.getPriceSell();
     }
 
-    public void convert(ProductDto dto) {
+    public void convert(ProductReq dto) {
         this.id = dto.getId();
         this.name = dto.getName();
         this.description = dto.getDescription();
@@ -74,6 +75,7 @@ public class Product extends BaseEntity implements Serializable {
         this.width = dto.getWidth();
         this.price = dto.getPrice();
         this.priceSell = dto.getPriceSell();
+        this.quantity = dto.getQuantity();
     }
 
 }

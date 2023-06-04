@@ -1,7 +1,6 @@
 package com.application.controller;
 
-import com.application.dto.ProductDto;
-import com.application.dto.ProductResp;
+import com.application.dto.request.ProductReq;
 import com.application.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/product")
@@ -46,12 +44,12 @@ public class ProductController {
     }
 
     @PostMapping("/new")
-    public ResponseEntity<?> insert(@RequestBody @Valid ProductDto dto) {
+    public ResponseEntity<?> insert(@RequestBody @Valid ProductReq dto) {
         return new ResponseEntity<>(productService.insert(dto), HttpStatus.CREATED);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@RequestBody @Valid ProductDto dto) throws IOException {
+    public ResponseEntity<?> update(@RequestBody @Valid ProductReq dto) throws IOException {
         return new ResponseEntity<>(productService.update(dto), HttpStatus.ACCEPTED);
     }
 
