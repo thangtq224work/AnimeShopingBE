@@ -3,14 +3,18 @@ package com.application.controller;
 import com.application.dto.request.ProductInCartReq;
 import com.application.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/api/v1")
 public class UserController {
     @Autowired
     private ProductService productService;
@@ -33,5 +37,13 @@ public class UserController {
     @PostMapping("/get-cart")
     public ResponseEntity<?> getCart(@RequestBody() List<ProductInCartReq> productInCartReqs) {
         return new ResponseEntity<>(productService.getProductInCart(productInCartReqs), HttpStatus.OK);
+    }
+    @GetMapping("/show")
+    @Cacheable(key = "#url", cacheManager = "imageCache", value = "images")
+    public ResponseEntity<byte[]> show(@RequestParam("url") String url) throws IOException {
+        Map<String, Object> map = productService.show(url);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType((String) map.get("contentType")))
+                .body((byte[]) map.get("image"));
     }
 }

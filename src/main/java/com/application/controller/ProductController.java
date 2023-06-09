@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/api/product")
 public class ProductController {
     @Autowired
     ProductService productService;
@@ -58,14 +58,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.saveImages(files, id));
     }
 
-    @GetMapping("/show")
-    @Cacheable(key = "#url", cacheManager = "imageCache", value = "images")
-    public ResponseEntity<byte[]> show(@RequestParam("url") String url) throws IOException {
-        Map<String, Object> map = productService.show(url);
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType((String) map.get("contentType")))
-                .body((byte[]) map.get("image"));
-    }
+
 //    @PutMapping("/new")
 //    public ResponseEntity<?> update(@RequestBody ProductDto dto) {
 //        return new ResponseEntity<>(productService.update(dto), HttpStatus.ACCEPTED);

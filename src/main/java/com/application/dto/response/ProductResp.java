@@ -64,7 +64,7 @@ public class ProductResp {
 
     private String buildUrl(String resource) {
         UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentServletMapping();
-        builder.pathSegment("product", "show");
+        builder.pathSegment("api","v1", "show");
         builder.queryParam("url", resource);
         return builder.toUriString();
     }

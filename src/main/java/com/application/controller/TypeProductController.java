@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/type-product")
+@RequestMapping("/api/type-product")
 @CrossOrigin("*")
 public class TypeProductController {
     @Autowired

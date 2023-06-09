@@ -26,10 +26,13 @@ public class Account implements Serializable {
     private String image;
     @Temporal(TemporalType.TIMESTAMP)
     private Date birthday;
-    private Integer status;
+    private Boolean status;
     private String token;
     private Date expiredToken;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "account")
     private List<Order> orders;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "username"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private List<Role> roles;
 
 }
