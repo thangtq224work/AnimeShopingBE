@@ -1,6 +1,6 @@
 package com.application.utils;
 
-import com.application.config.UploadConfig;
+import com.application.inject.UploadConfig;
 import com.application.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;

@@ -1,4 +1,4 @@
-package com.application.config.security;
+package com.application.inject;
 
 import lombok.Data;
 import lombok.Getter;

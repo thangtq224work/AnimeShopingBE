@@ -3,6 +3,7 @@ package com.application.exception.handler;
 import com.application.common.ResponseData;
 import com.application.common.ResponseDataTemplate;
 import com.application.exception.NotFoundException;
+import com.application.exception.ParamInvalidException;
 import com.application.exception.TokenInvalidException;
 import com.application.exception.UsernameOrPasswordNotValidException;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,11 @@ public class HandlerException {
     @ExceptionHandler(TokenInvalidException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseData handlerTokenInvalidException(TokenInvalidException exception) {
+        return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message(exception.getMessage()).build();
+    }
+    @ExceptionHandler(ParamInvalidException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseData handlerParamInvalidException(ParamInvalidException exception) {
         return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message(exception.getMessage()).build();
     }
     @ExceptionHandler(Exception.class)

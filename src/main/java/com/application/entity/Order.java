@@ -25,6 +25,8 @@ public class Order implements Serializable {
     private String phone;
     private Float shippingFee;
     private BigDecimal totalPrice;
+    private String description;
+    private Integer status;
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;

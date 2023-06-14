@@ -1,5 +1,6 @@
 package com.application;
 
+import com.application.common.Store;
 import com.application.constant.Constant;
 import com.application.entity.Account;
 import com.application.entity.Role;
@@ -9,13 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
 
-@SpringBootApplication(exclude = SecurityAutoConfiguration.class)
+@SpringBootApplication()
+@EnableCaching
 public class AnimeShopApplication implements CommandLineRunner {
     @Autowired
     private AccountRepo accountRepo;
@@ -23,6 +25,8 @@ public class AnimeShopApplication implements CommandLineRunner {
     private RoleRepo roleRepo;
     @Autowired
     private PasswordEncoder encoder;
+    @Autowired
+    Store store;
 
     public static void main(String[] args) {
         SpringApplication.run(AnimeShopApplication.class, args);
@@ -48,6 +52,6 @@ public class AnimeShopApplication implements CommandLineRunner {
             account.setRoles(List.of(roleRepo.getRole(Constant.AccountRole.ADMIN).get()));
             accountRepo.save(account);
         }
-
+        store.init();
     }
 }
