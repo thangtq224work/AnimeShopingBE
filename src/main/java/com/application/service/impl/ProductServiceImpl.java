@@ -3,6 +3,7 @@ package com.application.service.impl;
 import com.application.common.PageData;
 import com.application.constant.Constant;
 import com.application.dto.*;
+import com.application.dto.request.OrderReq;
 import com.application.dto.request.ProductInCartReq;
 import com.application.dto.request.ProductReq;
 import com.application.dto.response.ProductResp;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,7 +48,10 @@ public class ProductServiceImpl implements ProductService {
     ProductImageRepo productImageRepo;
     @Autowired
     UploadUtil uploadUtil;
-
+    @Autowired
+    DiscountRepo discountRepo;
+    @Autowired
+    ProductDiscountRepo productDiscountRepo;
     @Override
     public PageData<ProductResp> getAll(Pageable pageable) {
         Page<Product> page = productRepo.findAll(pageable);
@@ -63,6 +68,10 @@ public class ProductServiceImpl implements ProductService {
     public ProductResp getById(Integer id) {
         Product product = productRepo.findById(id).orElseThrow(() -> new NotFoundException("Product not found"));
         return new ProductResp(product);
+    }
+    public List<Product> getById(Integer [] ids){
+        List<Product> products = productRepo.findAllById(Arrays.stream(ids).toList());
+        return null;
     }
 
     @Override
@@ -82,7 +91,28 @@ public class ProductServiceImpl implements ProductService {
             );
         };
         Page<Product> products = productRepo.findAll(specification, pageable);
-        return PageData.of(products, products.toList().stream().map(i -> new ProductResp(i)).collect(Collectors.toList()));
+        List<ProductResp> productResps = products.toList().stream().map(i -> new ProductResp(i)).collect(Collectors.toList());
+        Pageable discountPageable = PageRequest.of(0,1,Sort.by(Sort.Direction.DESC,"discountStart"));
+        Page<Discount> discounts = discountRepo.getDiscountActive(discountPageable,true,new Date());
+        if(discounts.getTotalElements() >0){
+            Discount discount = discounts.toList().get(0);
+            for (ProductResp pi:productResps) {
+                pi.setPrice(pi.getPriceSell());
+                    if(productDiscountRepo.getByDiscountIdAndProductId(discount.getId(),pi.getId())>0L ){
+                        if(discount.getDiscountType()== Constant.TypeDiscount.PERCENT){
+                            // xu ly cong tong hay cong don
+                            BigDecimal priceSale = pi.getPriceSell().multiply(discount.getDiscountAmount().divide(BigDecimal.valueOf(100)));
+                            pi.setPriceSell(pi.getPriceSell().subtract(priceSale));
+                        }else{
+                            pi.setPriceSell(pi.getPriceSell().subtract(discount.getDiscountAmount()));
+                        }
+                        if(pi.getPriceSell().compareTo(BigDecimal.ZERO) < 0){
+                            pi.setPriceSell(BigDecimal.ZERO);
+                        }
+                    }
+            }
+        }
+        return PageData.of(products, productResps);
     }
 
     @Override
@@ -159,11 +189,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Map<String, Object> show(String url) throws IOException {
-        return uploadUtil.show(url);
-    }
-
-    @Override
     public List<ProductResp> getProductInCart(List<ProductInCartReq> productInCartReqs) {
         Specification<Product> specification = (root, query, criteriaBuilder) -> {
             Predicate categoryStatusPredicate = criteriaBuilder.isTrue(root.join("category",JoinType.INNER).get("status"));
@@ -184,7 +209,76 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
         }
-        return products.stream().map(i->new ProductResp(i)).collect(Collectors.toList());
+        List<ProductResp> productResps = products.stream().map(i->new ProductResp(i)).collect(Collectors.toList());
+        Pageable discountPageable = PageRequest.of(0,1,Sort.by(Sort.Direction.DESC,"discountStart"));
+        Page<Discount> discounts = discountRepo.getDiscountActive(discountPageable,true,new Date());
+        if(discounts.getTotalElements() >0){
+            Discount discount = discounts.toList().get(0);
+            for (ProductResp pi:productResps) {
+                pi.setPrice(pi.getPriceSell());
+                if(productDiscountRepo.getByDiscountIdAndProductId(discount.getId(),pi.getId())>0L ){
+                    if(discount.getDiscountType()== Constant.TypeDiscount.PERCENT){
+                        // xu ly cong tong hay cong don
+                        BigDecimal priceSale = pi.getPriceSell().multiply(discount.getDiscountAmount().divide(BigDecimal.valueOf(100)));
+                        pi.setPriceSell(pi.getPriceSell().subtract(priceSale));
+                    }else{
+                        pi.setPriceSell(pi.getPriceSell().subtract(discount.getDiscountAmount()));
+                    }
+                    if(pi.getPriceSell().compareTo(BigDecimal.ZERO) < 0){
+                        pi.setPriceSell(BigDecimal.ZERO);
+                    }
+                }
+            }
+        }
+        return productResps;
+    }
+
+    @Override
+    public List<ProductResp> getProductInCartV2(List<OrderReq.Product> productInCartReqs) {
+        Specification<Product> specification = (root, query, criteriaBuilder) -> {
+            Predicate categoryStatusPredicate = criteriaBuilder.isTrue(root.join("category",JoinType.INNER).get("status"));
+            Predicate typeStatusPredicate = criteriaBuilder.isTrue(root.join("typeProduct",JoinType.INNER).get("status"));
+            Predicate materialsStatusPredicate = criteriaBuilder.isTrue(root.join("material",JoinType.INNER).get("status"));
+            Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), Constant.Status.ACTIVE);
+            Predicate listPredicate = root.get("id").in(productInCartReqs.stream().map(i->i.getId()).collect(Collectors.toList()));
+            return criteriaBuilder.and(
+                    statusPredicate, categoryStatusPredicate, typeStatusPredicate, materialsStatusPredicate,listPredicate
+            );
+        };
+        List<Product> products = productRepo.findAll(specification);
+        for (OrderReq.Product product: productInCartReqs) {
+            for (Product p : products) {
+                if(p.getId() == product.getId()){
+                    p.setQuantity(product.getQuantity());
+                    break;
+                }
+            }
+        }
+        List<ProductResp> productResps = products.stream().map(i->new ProductResp(i)).collect(Collectors.toList());
+        Pageable discountPageable = PageRequest.of(0,1,Sort.by(Sort.Direction.DESC,"discountStart"));
+        Page<Discount> discounts = discountRepo.getDiscountActive(discountPageable,true,new Date());
+        if(discounts.getTotalElements() >0){
+            Discount discount = discounts.toList().get(0);
+            for (ProductResp pi:productResps) {
+                if(productDiscountRepo.getByDiscountIdAndProductId(discount.getId(),pi.getId())>0L ){
+                    if(discount.getDiscountType()== Constant.TypeDiscount.PERCENT){
+                        // xu ly cong tong hay cong don
+                        BigDecimal priceSale = pi.getPriceSell().multiply(discount.getDiscountAmount().divide(BigDecimal.valueOf(100)));
+                        pi.setPriceSell(pi.getPriceSell().subtract(priceSale));
+                    }else{
+                        pi.setPriceSell(pi.getPriceSell().subtract(discount.getDiscountAmount()));
+                    }
+                    if(pi.getPriceSell().compareTo(BigDecimal.ZERO) < 0){
+                        pi.setPriceSell(BigDecimal.ZERO);
+                    }
+                }
+            }
+        }
+        return productResps;
+    }
+    @Override
+    public Map<String, Object> show(String url) throws IOException {
+        return uploadUtil.show(url);
     }
 
     private String buildUrl(String resource) {
@@ -200,5 +294,4 @@ public class ProductServiceImpl implements ProductService {
         }
         return by.equals("priceSell") || by.equals("name") || by.equals("createAt");
     }
-
 }

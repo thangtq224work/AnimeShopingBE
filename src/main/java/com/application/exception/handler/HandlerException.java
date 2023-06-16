@@ -8,6 +8,7 @@ import com.application.exception.TokenInvalidException;
 import com.application.exception.UsernameOrPasswordNotValidException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,10 +36,16 @@ public class HandlerException {
     public ResponseData handlerParamInvalidException(ParamInvalidException exception) {
         return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message(exception.getMessage()).build();
     }
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseData handlerHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
+        return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message(exception.getMessage()).build();
+    }
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseData handlerException(Exception exception) {
         log.error(exception.getMessage());
+        exception.printStackTrace();
         return new ResponseData.Builder().code(99).message("Server is processing").build();
     }
 }

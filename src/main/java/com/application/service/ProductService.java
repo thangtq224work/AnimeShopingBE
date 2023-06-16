@@ -2,6 +2,7 @@ package com.application.service;
 
 import com.application.common.PageData;
 import com.application.dto.ImageDto;
+import com.application.dto.request.OrderReq;
 import com.application.dto.request.ProductInCartReq;
 import com.application.dto.request.ProductReq;
 import com.application.dto.response.ProductResp;
@@ -27,6 +28,7 @@ public interface ProductService {
 
     ProductResp update(ProductReq dto) throws IOException;
     List<ProductResp> getProductInCart(List<ProductInCartReq> productInCartReqs);
+    List<ProductResp> getProductInCartV2(List<OrderReq.Product> products);
     List<ImageDto> saveImages(MultipartFile[] files, Integer id) throws IOException;
 
     public Map<String, Object> show(String url) throws IOException;

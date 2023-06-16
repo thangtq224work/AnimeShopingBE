@@ -16,7 +16,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Account implements Serializable {
+public class Account extends BaseEntity implements Serializable {
     @Id
     private String username;
     private String fullName;

@@ -1,5 +1,6 @@
 package com.application.entity;
 
+import com.application.dto.response.ProductResp;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,6 +36,15 @@ public class OrderDetail implements Serializable {
     @Getter
     public enum StatusOrderDetail {
         CANCEL, SUCCESS
+
+    }
+    public OrderDetail(ProductResp resp,Order oid){
+        this.quantity = resp.getQuantity();
+        this.originalPrice = resp.getPrice();
+        this.sellPrice = resp.getPriceSell();
+        this.product = new Product(resp.getId());
+        this.order = oid;
+
 
     }
 }

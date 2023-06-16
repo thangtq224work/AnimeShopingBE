@@ -13,6 +13,20 @@ public class Constant {
         public static final Byte NON_ACTIVE = 0;
 
     }
+    public static class TypeDiscount{
+        public static byte PERCENT=0;
+        public static byte MONEY=1;
+
+    }
+    public static class OrderStatus{
+        public static Integer WAITING = 0;
+        public static Integer CONFIRMED = 1;
+        public static Integer WAITING_SHIPPING = 2;
+        public static Integer SHIPPING = 3;
+        public static Integer CANCEL = 11;
+        public static Integer SUCCESS = 10;
+
+    }
 
     public static class Status {
         public static final Boolean ACTIVE = true;

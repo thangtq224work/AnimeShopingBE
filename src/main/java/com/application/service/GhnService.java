@@ -119,6 +119,8 @@ public class GhnService {
             log.info(ghnBean.getCalculateFee());
             ResponseEntity<CalculateFeeResp> response = template.exchange(ghnBean.getCalculateFee(), HttpMethod.POST,entity, CalculateFeeResp.class);
             if(response.getStatusCode().value() == 200){
+                CalculateFeeResp.Fee resp = response.getBody().getFee();
+                resp.setTotal(Math.ceil(resp.getTotal()/1000)*1000); // làm tròn đến 1000
                 return response.getBody().getFee();
             }
         }

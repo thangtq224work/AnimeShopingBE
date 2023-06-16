@@ -1,6 +1,9 @@
 package com.application.controller;
 
+import com.application.common.ResponseDataTemplate;
+import com.application.dto.request.OrderReq;
 import com.application.dto.request.ProductInCartReq;
+import com.application.service.OrderService;
 import com.application.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,6 +21,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private ProductService productService;
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/get-filter")
     public ResponseEntity<?> getAll() {
@@ -45,5 +50,9 @@ public class UserController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType((String) map.get("contentType")))
                 .body((byte[]) map.get("image"));
+    }
+    @PostMapping("/order/create")
+    public ResponseEntity<?> order(@RequestBody OrderReq orderReq){
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.create(orderReq)).build(), HttpStatus.OK);
     }
 }
