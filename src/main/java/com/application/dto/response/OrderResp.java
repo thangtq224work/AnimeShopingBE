@@ -16,8 +16,10 @@ public class OrderResp extends BaseDto {
     private Integer id;
     private String clientName;
     private String orderCode;
+    private String ghnCode;
     private String address;
     private String phone;
+    private BigDecimal serviceFee;
     private BigDecimal shippingFee;
     private BigDecimal totalPrice;
     private String description;
@@ -37,6 +39,8 @@ public class OrderResp extends BaseDto {
         this.status = order.getStatus();
         this.userId = order.getAccount().getUsername();
         this.orderCode = order.getOrderCode();
+        this.ghnCode = order.getGhnCode();
+        this.serviceFee = order.getServiceFee();
         this.createAt = order.getCreateAt();
         this.updateAt = order.getUpdateAt();
         this.createBy = order.getCreateBy();

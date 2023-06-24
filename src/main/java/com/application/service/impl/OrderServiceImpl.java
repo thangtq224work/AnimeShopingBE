@@ -127,13 +127,52 @@ public class OrderServiceImpl implements OrderService {
         }
         PreviewResp.Data obj = (PreviewResp.Data) ghnService.delivery(orderGhnReq);
         order.setGhnCode(obj.getOrderCode());
-        log.info("ghn code : {}",obj.getOrderCode());
-        log.info("ghn code : {}",obj);
+        order.setServiceFee(BigDecimal.valueOf(obj.getTotal()));
         order.setStatus(Constant.OrderStatus.WAITING_SHIPPING);
         orderRepo.save(order);
-        return 0;
+        return 1;
     }
 
+    @Override
+    public int delivering(Integer orderId) {
+        Order order = orderRepo.findById(orderId).orElseThrow(()->new NotFoundException("Order not found"));
+        if(order.getStatus() != Constant.OrderStatus.WAITING_SHIPPING){
+            throw new ParamInvalidException("Status invalid");
+        }
+        order.setStatus(Constant.OrderStatus.SHIPPING);
+        orderRepo.save(order);
+        return 1;
+    }
+
+    @Override
+    public int cancel(Integer orderId) {
+        Order order = orderRepo.findById(orderId).orElseThrow(()->new NotFoundException("Order not found"));
+        if(order.getStatus() != Constant.OrderStatus.WAITING && order.getStatus() != Constant.OrderStatus.CONFIRMED){
+            throw new ParamInvalidException("Status invalid");
+        }
+        if(order.getStatus() == Constant.OrderStatus.CONFIRMED){
+             List<Product> products =order.getOrderDetails().stream().map(item->{
+                Product product = item.getProduct();
+                product.setQuantity(product.getQuantity()+item.getQuantity());
+                return product;
+            }).collect(Collectors.toList());
+            productRepo.saveAll(products);
+        }
+        order.setStatus(Constant.OrderStatus.CANCEL);
+        orderRepo.save(order);
+        return 1;
+    }
+
+    @Override
+    public int success(Integer orderId) {
+        Order order = orderRepo.findById(orderId).orElseThrow(()->new NotFoundException("Order not found"));
+        if(order.getStatus() != Constant.OrderStatus.SHIPPING){
+            throw new ParamInvalidException("Status invalid");
+        }
+        order.setStatus(Constant.OrderStatus.SUCCESS);
+        orderRepo.save(order);
+        return 1;
+    }
     private void updateOrderStatus(List<Order> list) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

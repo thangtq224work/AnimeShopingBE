@@ -10,5 +10,8 @@ public interface OrderService {
     int create(OrderReq orderReq);
     int confirm(Integer orderId);
     int delivery(OrderGhnReq orderId);
+    int delivering(Integer orderId);
+    int success(Integer orderId);
+    int cancel(Integer orderId);
     PageData<OrderResp> getAll(Integer st, Integer p, Integer s);
 }

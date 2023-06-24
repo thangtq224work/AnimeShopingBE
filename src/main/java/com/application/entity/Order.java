@@ -26,6 +26,7 @@ public class Order extends BaseEntity implements Serializable {
     private String phone;
     private String orderCode;
     private String ghnCode;
+    private BigDecimal serviceFee;
     private BigDecimal shippingFee;
     private BigDecimal totalPrice;
     private BigDecimal customerMoney;

@@ -23,8 +23,8 @@ public class Constant {
         public static Integer CONFIRMED = 1;
         public static Integer WAITING_SHIPPING = 2;
         public static Integer SHIPPING = 3;
-        public static Integer CANCEL = 11;
-        public static Integer SUCCESS = 10;
+        public static Integer CANCEL = 101;
+        public static Integer SUCCESS = 100;
 
     }
 

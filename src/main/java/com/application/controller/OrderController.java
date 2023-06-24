@@ -33,5 +33,20 @@ public class OrderController {
         return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.delivery(orderGhnReq)).build(), HttpStatus.OK);
 //        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
     }
+    @GetMapping("delivering")
+    public ResponseEntity<?> delivering(@RequestParam() Integer orderId ){
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.delivering(orderId)).build(), HttpStatus.OK);
+//        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
+    }
+    @GetMapping("success")
+    public ResponseEntity<?> success(@RequestParam() Integer orderId ){
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.success(orderId)).build(), HttpStatus.OK);
+//        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
+    }
+    @GetMapping("cancel")
+    public ResponseEntity<?> cancel(@RequestParam() Integer orderId ){
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.cancel(orderId)).build(), HttpStatus.OK);
+//        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
+    }
 
 }
