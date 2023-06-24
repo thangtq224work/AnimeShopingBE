@@ -1,10 +1,16 @@
 package com.application.service;
 
 import com.application.common.Store;
+import com.application.constant.Constant;
+import com.application.dto.request.OrderGhnReq;
 import com.application.dto.response.ghn.*;
+import com.application.entity.Order;
 import com.application.inject.GhnBean;
 import com.application.dto.request.CalculateFeeReq;
 import com.application.exception.ParamInvalidException;
+import com.application.repository.OrderRepo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +22,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
 public class GhnService {
     @Autowired
     private GhnBean ghnBean;
+    @Autowired
+    private OrderRepo orderRepo;
     @Autowired
     private ObjectMapper mapper;
     @Autowired
@@ -121,7 +127,8 @@ public class GhnService {
             if(response.getStatusCode().value() == 200){
                 CalculateFeeResp.Fee resp = response.getBody().getFee();
                 resp.setTotal(Math.ceil(resp.getTotal()/1000)*1000); // làm tròn đến 1000
-                return response.getBody().getFee();
+//                return response.getBody().getFee();
+                return resp;
             }
         }
         catch (Exception ex){
@@ -168,6 +175,88 @@ public class GhnService {
             ResponseEntity<ServiceResp> response = template.exchange(ghnBean.getGetService(), HttpMethod.POST,entity, ServiceResp.class);
             if(response.getStatusCode().value() == 200){
                 return response.getBody().getServices();
+            }
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            log.error(ex.getMessage());
+            throw new ParamInvalidException("Param invalid");
+        }
+        return null;
+    }
+    public Object preview(OrderGhnReq req){
+        try {
+            RestTemplate template = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("token",ghnBean.getToken());
+            Map<String,Object> body = new HashMap<>();
+            body.put("to_name",req.getToName());
+            body.put("note",req.getNote());
+            body.put("required_note",req.getRequiredNote());
+            body.put("client_order_code",req.getClientOrderCode());
+            body.put("cod_amount",req.getCodAmount());
+            body.put("to_phone",req.getToPhone());
+            body.put("to_address",req.getToAddress());
+            body.put("to_district_id",req.getDistrictId());
+            body.put("to_ward_code",req.getToWardCode());
+            body.put("length",req.getLength());
+            body.put("weight",req.getWeight());
+            body.put("width",req.getWidth());
+            body.put("height",req.getHeight());
+            body.put("insurance_value",req.getInsuranceValue().doubleValue() < 5000000?req.getInsuranceValue():5000000);//            5000000 is maximum
+            body.put("service_type_id",2); // ghn api test has error . it just accepts service_id = 2;
+            body.put("payment_type_id",1); // 1 seller pay 2 buyer pay service fee
+//            body.put("service_id",req.getServiceType()); // ghn api test has error . it just accepts service_id = 2;
+            body.put("items",req.getItems());
+            HttpEntity entity = new HttpEntity<>(mapper.writeValueAsString(body),headers);
+            log.info(ghnBean.getPreviewOrder());
+            ResponseEntity<PreviewResp> response = template.exchange(ghnBean.getPreviewOrder(), HttpMethod.POST,entity, PreviewResp.class);
+            if(response.getStatusCode().value() == 200){
+                PreviewResp.Data resp = response.getBody().getData();
+                resp.setTotal(Math.ceil(resp.getTotal()/1000)*1000); // làm tròn đến 1000
+                return resp;
+            }
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+            log.error(ex.getMessage());
+            throw new ParamInvalidException("Param invalid");
+        }
+        return null;
+    }
+    public Object delivery(OrderGhnReq req){
+        try {
+            RestTemplate template = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("token",ghnBean.getToken());
+            Map<String,Object> body = new HashMap<>();
+            body.put("to_name",req.getToName());
+            body.put("note",req.getNote());
+            body.put("required_note",req.getRequiredNote());
+            body.put("client_order_code",req.getClientOrderCode());
+            body.put("cod_amount",req.getCodAmount());
+            body.put("to_phone",req.getToPhone());
+            body.put("to_address",req.getToAddress());
+            body.put("to_district_id",req.getDistrictId());
+            body.put("to_ward_code",req.getToWardCode());
+            body.put("length",req.getLength());
+            body.put("weight",req.getWeight());
+            body.put("width",req.getWidth());
+            body.put("height",req.getHeight());
+            body.put("insurance_value",req.getInsuranceValue().doubleValue() < 5000000?req.getInsuranceValue():5000000);//            5000000 is maximum
+            body.put("service_type_id",2); // ghn api test has error . it just accepts service_id = 2;
+            body.put("payment_type_id",1); // 1 seller pay 2 buyer pay service fee
+//            body.put("service_id",req.getServiceType()); // ghn api test has error . it just accepts service_id = 2;
+            body.put("items",req.getItems());
+            HttpEntity entity = new HttpEntity<>(mapper.writeValueAsString(body),headers);
+            log.info(ghnBean.getCreateOrder());
+            ResponseEntity<PreviewResp> response = template.exchange(ghnBean.getCreateOrder(), HttpMethod.POST,entity, PreviewResp.class);
+            if(response.getStatusCode().value() == 200){
+                PreviewResp.Data resp = response.getBody().getData();
+                resp.setTotal(Math.ceil(resp.getTotal()/1000)*1000); // làm tròn đến 1000
+                return resp;
             }
         }
         catch (Exception ex){

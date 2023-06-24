@@ -25,5 +25,13 @@ public class GhnBean {
     private String getStore;
     @Value("${ghn.getService}")
     private String getService;
+    @Value("${ghn.updateOrder}")
+    private String updateOrder;
+    @Value("${ghn.previewOrder}")
+    private String previewOrder;
+    @Value("${ghn.changeCOD}")
+    private String changeCOD;
+    @Value("${ghn.getOrderDetail}")
+    private String getOrderDetail;
 
 }

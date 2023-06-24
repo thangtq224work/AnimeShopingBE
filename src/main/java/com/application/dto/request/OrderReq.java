@@ -28,6 +28,7 @@ public class OrderReq {
     @NotNull
     private BigDecimal totalPrice;
     private BigDecimal customerMoney;
+    private String ghnCode;
     @Length(min = 5,max = 50)
     private String name;
     @NotNull

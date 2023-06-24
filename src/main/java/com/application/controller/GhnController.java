@@ -3,6 +3,7 @@ package com.application.controller;
 import com.application.common.ResponseDataTemplate;
 import com.application.dto.request.CalculateFeeReq;
 import com.application.dto.request.LoginReq;
+import com.application.dto.request.OrderGhnReq;
 import com.application.service.GhnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -36,5 +37,11 @@ public class GhnController {
     public ResponseEntity<?> calculateFee(@RequestBody CalculateFeeReq calculateFeeReq) {
         System.out.println(calculateFeeReq);
         return new ResponseEntity<>(ResponseDataTemplate.OK.data(ghnService.calculate(calculateFeeReq)).build(), HttpStatus.OK);
+    }
+    @PostMapping("preview")
+    public ResponseEntity<?> preview(@RequestBody() OrderGhnReq orderGhnReq ){
+//        System.out.println(orderGhnReq);
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(ghnService.preview(orderGhnReq)).build(), HttpStatus.OK);
+//        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
     }
 }

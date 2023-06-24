@@ -24,6 +24,8 @@ public class Order extends BaseEntity implements Serializable {
     private String clientName;
     private String address;
     private String phone;
+    private String orderCode;
+    private String ghnCode;
     private BigDecimal shippingFee;
     private BigDecimal totalPrice;
     private BigDecimal customerMoney;
@@ -46,6 +48,7 @@ public class Order extends BaseEntity implements Serializable {
         this.totalPrice = totalPrice;
         this.clientName = req.getName();
         this.account = account;
+        this.ghnCode = req.getGhnCode();
     }
 
 }

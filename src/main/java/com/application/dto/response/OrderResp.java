@@ -1,5 +1,6 @@
 package com.application.dto.response;
 
+import com.application.dto.BaseDto;
 import com.application.entity.Order;
 import lombok.*;
 
@@ -11,9 +12,10 @@ import java.util.stream.Collectors;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderResp {
+public class OrderResp extends BaseDto {
     private Integer id;
     private String clientName;
+    private String orderCode;
     private String address;
     private String phone;
     private BigDecimal shippingFee;
@@ -34,6 +36,12 @@ public class OrderResp {
         this.clientName = order.getClientName();
         this.status = order.getStatus();
         this.userId = order.getAccount().getUsername();
+        this.orderCode = order.getOrderCode();
+        this.createAt = order.getCreateAt();
+        this.updateAt = order.getUpdateAt();
+        this.createBy = order.getCreateBy();
+        this.updateBy = order.getUpdateBy();
+
         this.orderDetails = order.getOrderDetails().stream().map(i->new OrderResp.OrderDetail(i)).collect(Collectors.toList());
     }
     @Data
@@ -42,6 +50,8 @@ public class OrderResp {
     public static class OrderDetail{
         private Long id;
         private Integer quantity;
+        private Integer quantityAvailable;
+        private String name;
         private BigDecimal originalPrice;
         private BigDecimal sellPrice;
         private Float weight;
@@ -57,6 +67,8 @@ public class OrderResp {
             this.width = orderDetail.getProduct().getWidth();
             this.height = orderDetail.getProduct().getHeight();
             this.length = orderDetail.getProduct().getLength();
+            this.name = orderDetail.getProduct().getName();
+            this.quantityAvailable = orderDetail.getProduct().getQuantity();
         }
     }
 }
