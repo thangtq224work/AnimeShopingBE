@@ -25,6 +25,7 @@ public class OrderResp extends BaseDto {
     private String description;
     private String addressCode;
     private Integer status;
+    private BigDecimal customerMoney;
     private String userId;
     List<OrderResp.OrderDetail> orderDetails;
     public OrderResp(Order order){
@@ -45,7 +46,7 @@ public class OrderResp extends BaseDto {
         this.updateAt = order.getUpdateAt();
         this.createBy = order.getCreateBy();
         this.updateBy = order.getUpdateBy();
-
+        this.customerMoney = order.getCustomerMoney();
         this.orderDetails = order.getOrderDetails().stream().map(i->new OrderResp.OrderDetail(i)).collect(Collectors.toList());
     }
     @Data

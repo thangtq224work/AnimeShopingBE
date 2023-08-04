@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -30,7 +31,13 @@ public class UploadResolve {
     }
 
     public Resource loadFile(String fileName) {
-        Path path = fileStorageLocation.resolve(fileName).normalize();
+        Path path = null;
+        try{
+            path = fileStorageLocation.resolve(fileName).normalize();
+        }catch (InvalidPathException exception){
+            log.warn("invalid path : "+fileName);
+            throw new NotFoundException("File not found");
+        }
         try {
             Resource resource = new UrlResource(path.toUri());
             if (resource.exists()) {

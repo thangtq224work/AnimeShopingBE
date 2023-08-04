@@ -3,8 +3,10 @@ package com.application;
 import com.application.common.Store;
 import com.application.constant.Constant;
 import com.application.entity.Account;
+import com.application.entity.AccountRole;
 import com.application.entity.Role;
 import com.application.repository.AccountRepo;
+import com.application.repository.AccountRoleRepo;
 import com.application.repository.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -23,6 +25,8 @@ public class AnimeShopApplication implements CommandLineRunner {
     private AccountRepo accountRepo;
     @Autowired
     private RoleRepo roleRepo;
+    @Autowired
+    private AccountRoleRepo accountRoleRepo;
     @Autowired
     private PasswordEncoder encoder;
     @Autowired
@@ -49,8 +53,9 @@ public class AnimeShopApplication implements CommandLineRunner {
             account.setUsername("admin");
             account.setPassword(encoder.encode("admin123"));
             account.setStatus(Constant.Status.ACTIVE);
-            account.setRoles(List.of(roleRepo.getRole(Constant.AccountRole.ADMIN).get()));
             accountRepo.save(account);
+            List<AccountRole> accountRoles = List.of(new AccountRole(account,roleRepo.getRole(Constant.AccountRole.ADMIN).get()),new AccountRole(account,roleRepo.getRole(Constant.AccountRole.USER).get()));
+            accountRoleRepo.saveAll(accountRoles);
         }
         store.init();
     }

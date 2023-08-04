@@ -29,10 +29,10 @@ public class Account extends BaseEntity implements Serializable {
     private Boolean status;
     private String token;
     private Date expiredToken;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "account")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "account")
     private List<Order> orders;
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "username"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private List<Role> roles;
+    @OneToMany(fetch = FetchType.EAGER,mappedBy = "account")
+//    @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "username"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private List<AccountRole> accountRoles;
 
 }

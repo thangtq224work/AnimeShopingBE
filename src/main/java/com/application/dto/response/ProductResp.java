@@ -47,7 +47,7 @@ public class ProductResp {
         this.height = product.getHeight();
         this.length = product.getLength();
         this.width = product.getWidth();
-        this.price = product.getPrice();
+        this.price = product.getPriceSell();
         this.priceSell = product.getPriceSell();
         this.quantity = product.getQuantity();
         this.category = new CategoryDto(product.getCategory());

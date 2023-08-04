@@ -115,7 +115,7 @@ public class AuthService {
     }
 
     private String[] getRoleFromAccount(Account account) {
-        String scopes[] = account.getRoles().stream().map((role) -> role.getRole()).toArray(size -> new String[size]);
+        String scopes[] = account.getAccountRoles().stream().map((accountRole) -> accountRole.getRole().getRole()).toArray(size -> new String[size]);
         return scopes;
     }
 }

@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -24,7 +25,10 @@ public class Order extends BaseEntity implements Serializable {
     private String clientName;
     private String address;
     private String phone;
+    @Column(unique = true)
     private String orderCode;
+    @Column(unique = true)
+    private String paymentCode;
     private String ghnCode;
     private BigDecimal serviceFee;
     private BigDecimal shippingFee;
@@ -33,6 +37,10 @@ public class Order extends BaseEntity implements Serializable {
     private String description;
     private String addressCode;
     private Integer status;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date expiredPayment;
+    @Column(length = 700)
+    private String urlPayment;
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;

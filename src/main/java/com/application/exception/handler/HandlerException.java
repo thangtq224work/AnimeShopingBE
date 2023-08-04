@@ -2,10 +2,7 @@ package com.application.exception.handler;
 
 import com.application.common.ResponseData;
 import com.application.common.ResponseDataTemplate;
-import com.application.exception.NotFoundException;
-import com.application.exception.ParamInvalidException;
-import com.application.exception.TokenInvalidException;
-import com.application.exception.UsernameOrPasswordNotValidException;
+import com.application.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -39,6 +36,11 @@ public class HandlerException {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseData handlerHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
+        return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message(exception.getMessage()).build();
+    }
+    @ExceptionHandler(InvalidException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseData handlerInvalidException(InvalidException exception) {
         return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message(exception.getMessage()).build();
     }
     @ExceptionHandler(Exception.class)

@@ -19,10 +19,14 @@ public class Role {
     private Long id;
     @Column(name = "name")
     private String role;
-    @JsonIgnore
-    @ToString.Exclude
-    @ManyToMany(mappedBy = "roles")
-    private List<Account> accounts;
+//    @JsonIgnore
+//    @ToString.Exclude
+//    @ManyToMany(mappedBy = "roles")
+//    private List<Account> accounts;
+
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "role")
+//    @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "username"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private List<AccountRole> accountRoles;
     public Role(Long id, String role) {
         super();
         this.id = id;

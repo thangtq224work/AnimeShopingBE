@@ -3,8 +3,14 @@ package com.application.service;
 import com.application.common.PageData;
 import com.application.dto.request.OrderGhnReq;
 import com.application.dto.request.OrderReq;
+import com.application.dto.request.vnpay.IPNReq;
 import com.application.dto.response.OrderResp;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 public interface OrderService {
     int create(OrderReq orderReq);
@@ -13,5 +19,9 @@ public interface OrderService {
     int delivering(Integer orderId);
     int success(Integer orderId);
     int cancel(Integer orderId);
+    List<OrderResp> getOrder(String user);
     PageData<OrderResp> getAll(Integer st, Integer p, Integer s);
+    public Object createPaymentOrder(Integer id, Authentication authentication, String locale, HttpServletRequest request) throws UnsupportedEncodingException;
+    public int confirmPayment(HttpServletRequest ipnReq) throws UnsupportedEncodingException;
+    String queryPayment(String vnp_TxnRef,HttpServletRequest request) throws IOException;
 }
