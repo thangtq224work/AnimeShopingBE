@@ -1,5 +1,6 @@
 package com.application.entity;
 
+import com.application.dto.request.RegisterReq;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,5 +35,11 @@ public class Account extends BaseEntity implements Serializable {
     @OneToMany(fetch = FetchType.EAGER,mappedBy = "account")
 //    @JoinTable(name = "account_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "username"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private List<AccountRole> accountRoles;
-
+    public Account(RegisterReq registerReq){
+        this.username = registerReq.getUsername();
+        this.fullName = registerReq.getFullname();
+        this.password = registerReq.getPassword();
+        this.phone = registerReq.getPhone();
+        this.email = registerReq.getEmail();
+    }
 }

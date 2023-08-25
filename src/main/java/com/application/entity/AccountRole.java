@@ -30,5 +30,9 @@ public class AccountRole {
         this.account = account;
         this.role = role;
     }
+    public AccountRole(Role role){
+        this.account = account;
+        this.role = role;
+    }
 
 }

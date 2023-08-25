@@ -22,16 +22,25 @@ public class UserOrderController {
     public ResponseEntity<?> getOrder(Authentication authentication){
         return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.getOrder(authentication.getName())).build(), HttpStatus.OK);
     }
+    @GetMapping("/order/{id}")
+    public ResponseEntity<?> getOrder(@PathVariable("id") Integer id){
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.getOrderById(id)).build(), HttpStatus.OK);
+    }
     @GetMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestParam("oid")Integer id, @RequestParam(value = "lang",required = false,defaultValue = "en")String locale, HttpServletRequest request, Authentication authentication) throws UnsupportedEncodingException {
         return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.createPaymentOrder(id,authentication,locale,request)).build(),HttpStatus.OK);
     }
-    @PostMapping("/payment")
+    @GetMapping("/payment")
     public ResponseEntity<?> payment(HttpServletRequest request) throws UnsupportedEncodingException {
         return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.confirmPayment(request)).build(),HttpStatus.OK);
     }
     @GetMapping("/query-payment")
-    public ResponseEntity<?> queryPayment(HttpServletRequest request,@RequestParam("oid") String id) throws IOException {
+    public ResponseEntity<?> queryPayment(HttpServletRequest request,@RequestParam("oid") Integer id) throws IOException {
         return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.queryPayment(id,request)).build(),HttpStatus.OK);
     }
+    @GetMapping("/refund")
+    public ResponseEntity<?> refund(@RequestParam("oid") Integer id,Authentication authentication,HttpServletRequest request) throws IOException {
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.refundPayment(id,authentication,request)).build(),HttpStatus.OK);
+    }
+
 }

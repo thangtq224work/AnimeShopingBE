@@ -41,10 +41,11 @@ public class Order extends BaseEntity implements Serializable {
     private Date expiredPayment;
     @Column(length = 700)
     private String urlPayment;
+    private String transactionNo;
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails;
     public Order(OrderReq req,Account account,BigDecimal totalPrice){
         this.id= req.getId();;

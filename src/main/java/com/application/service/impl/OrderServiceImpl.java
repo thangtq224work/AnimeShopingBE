@@ -7,10 +7,7 @@ import com.application.dto.request.OrderReq;
 import com.application.dto.response.OrderResp;
 import com.application.dto.response.ProductResp;
 import com.application.dto.response.ghn.PreviewResp;
-import com.application.entity.Account;
-import com.application.entity.Order;
-import com.application.entity.OrderDetail;
-import com.application.entity.Product;
+import com.application.entity.*;
 import com.application.exception.InvalidException;
 import com.application.exception.NotFoundException;
 import com.application.exception.ParamInvalidException;
@@ -41,12 +38,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -86,7 +83,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(Constant.OrderStatus.WAITING);
         order.setOrderCode("HD"+new Date().getTime()+((int)Math.random()*101)); // 0 to 100
         order.setCustomerMoney(BigDecimal.ZERO);
-        Order orderSaved = orderRepo.save(order);
+        Order orderSaved = orderRepo.saveAndFlush(order); // gay loi
         List<OrderDetail> orderDetails = list.stream().map(i->new OrderDetail(i,orderSaved)).collect(Collectors.toList());
         orderDetailRepo.saveAll(orderDetails);
         return 1;
@@ -145,7 +142,7 @@ public class OrderServiceImpl implements OrderService {
             throw new NotFoundException(String.format("Order %d not found",id));
         }
         Order order = orderRepo.getByIdAndUsername(authentication.getName(), id).orElseThrow(()->new NotFoundException(String.format("Order %d not found",id)));
-        if(order.getCustomerMoney().compareTo(order.getTotalPrice()) >= 0){
+        if(order.getCustomerMoney().add(order.getShippingFee()).compareTo(order.getTotalPrice()) >= 0){
             throw new ParamInvalidException("Invalid request");
         }
         if(order.getExpiredPayment() == null || order.getUrlPayment() == null || new Date().after(order.getExpiredPayment())){
@@ -154,16 +151,16 @@ public class OrderServiceImpl implements OrderService {
             // orderType : undefined order type . see more on vnp docs
             String vnp_TxnRef = order.getOrderCode()+vnPayUtil.getRandomNumber(8);
             String message = String.format("%s paid the bill %s",authentication.getName(),order.getOrderCode());
-            String paymentUrl = this.createOrderUrl(vnp_TxnRef,order.getTotalPrice().intValue(),locale,message,"150002",request,null,"VND");
+            String paymentUrl = this.createOrderUrl(order.getId(),vnp_TxnRef,order.getTotalPrice().add(order.getShippingFee()).intValue(),locale,message,"150002",request,null,"VND");
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
             calendar.add(Calendar.MINUTE,15);
             order.setExpiredPayment(calendar.getTime());
             order.setUrlPayment(paymentUrl);
             order.setPaymentCode(vnp_TxnRef);
             orderRepo.save(order);
-            return mapper.createObjectNode().put("code", "00").put("message","success").put("data",paymentUrl).toString();
+            return mapper.createObjectNode().put("code", "00").put("message","success").put("data",paymentUrl);
         }
-        return mapper.createObjectNode().put("code", "00").put("message","success").put("data",order.getUrlPayment()).toString();
+        return mapper.createObjectNode().put("code", "00").put("message","success").put("data",order.getUrlPayment());
 //        return order.getUrlPayment();
     }
 
@@ -214,13 +211,19 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResp> getOrder(String user) {
 //        String user = ((Principal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getName();
-        log.info(user);
+//        log.info(user);
         if(user == null || user.trim().length() == 0){
             throw new NotFoundException(String.format("User %d not found",user));
         }
         List<Order> orders = orderRepo.getByUsername(user);
         List<OrderResp> orderResps = orders.stream().map(i->new OrderResp(i)).collect(Collectors.toList());
         return orderResps;
+    }
+
+    @Override
+    public OrderResp getOrderById(Integer id) {
+        Order order = orderRepo.findById(id).orElseThrow(()->new NotFoundException("Order not found"));
+        return new OrderResp(order,1);
     }
 
     @Override
@@ -250,14 +253,14 @@ public class OrderServiceImpl implements OrderService {
         String signValue = vnPayUtil.hashAllFields(fields,vnPay.getVnp_HashSecret());
         if (signValue.equals(vnp_SecureHash))
         {
-            String vnp_TxnRef =(String) fields.get("vnp_TxnRef");
+            String vnp_TxnRef = fields.get("vnp_TxnRef");
 //            boolean checkOrderId = true; // vnp_TxnRef exists in your database
             Optional<Order> optional = orderRepo.getByPaymentCode(vnp_TxnRef);
             if(optional.isEmpty()){
                 throw new InvalidException("Order not found");
             }
             Order order = optional.get();
-            if(order.getCustomerMoney().compareTo(order.getTotalPrice()) >= 0){
+            if(order.getCustomerMoney().compareTo(order.getTotalPrice().add(order.getShippingFee())) >= 0){
                 throw new ParamInvalidException("Invalid request");
             }
             Long vnp_Amount =Long.valueOf(fields.get("vnp_Amount"));
@@ -276,7 +279,9 @@ public class OrderServiceImpl implements OrderService {
                         if ("00".equals(request.getParameter("vnp_ResponseCode")) || "07".equals(request.getParameter("vnp_ResponseCode")))
                         {
                             BigDecimal money = BigDecimal.valueOf(Double.valueOf(fields.get("vnp_Amount")+""));
+                            money = money.divide(BigDecimal.valueOf(100));
                             order.setCustomerMoney(order.getCustomerMoney().add(money));
+                            order.setTransactionNo(request.getParameter("vnp_TransactionNo"));
 //                            order.setUrlPayment(null);
                             orderRepo.save(order);
                         }
@@ -316,6 +321,90 @@ public class OrderServiceImpl implements OrderService {
         orderRepo.save(order);
         return 1;
     }
+
+    @Override
+    public int refundPayment(Integer id, Authentication authentication, HttpServletRequest request) throws IOException {
+        String user = authentication.getName();
+        Order order = orderRepo.getByIdAndUsername(user,id).orElseThrow(()->new InvalidException("Order not found"));
+        if(order.getCustomerMoney().compareTo(BigDecimal.ZERO) <= 0){
+            throw new InvalidException("Order invalid");
+        }
+        String vnp_RequestId = vnPayUtil.getRandomNumber(16);
+        String vnp_Version = vnPay.getVnp_Version();
+        String vnp_Command = "refund";
+        String vnp_TmnCode = vnPay.getVnp_TmnCode();
+//        02: Giao dịch hoàn trả toàn phần (vnp_TransactionType=02)
+//        03: Giao dịch hoàn trả một phần (vnp_TransactionType=03)
+        String vnp_TransactionType = "02";
+        String vnp_TxnRef = order.getPaymentCode();
+//        long amount = Integer.parseInt(req.getParameter("amount"))*100;
+        long amount = order.getCustomerMoney().intValue()*100;
+        String vnp_Amount = String.valueOf(amount);
+        String vnp_OrderInfo = "Refund OrderId: " + order.getOrderCode();
+        String vnp_TransactionNo = order.getTransactionNo(); //Assuming value of the parameter "vnp_TransactionNo" does not exist on your system.
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        String vnp_TransactionDate = formatter.format(order.getExpiredPayment());
+        String vnp_CreateBy = user;
+
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        String vnp_CreateDate = formatter.format(cld.getTime());
+
+        String vnp_IpAddr = vnPayUtil.getIpAddress(request);
+
+        ObjectNode vnp_Params =mapper.createObjectNode();
+        vnp_Params.put("vnp_RequestId", vnp_RequestId);
+        vnp_Params.put("vnp_Version", vnp_Version);
+        vnp_Params.put("vnp_Command", vnp_Command);
+        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.put("vnp_TransactionType", vnp_TransactionType);
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.put("vnp_Amount", vnp_Amount);
+        vnp_Params.put("vnp_OrderInfo", vnp_OrderInfo);
+
+        if(vnp_TransactionNo != null && !vnp_TransactionNo.isEmpty())
+        {
+            vnp_Params.put("vnp_TransactionNo", vnp_TransactionNo);
+        }
+
+        vnp_Params.put("vnp_TransactionDate", vnp_TransactionDate);
+        vnp_Params.put("vnp_CreateBy", vnp_CreateBy);
+        vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+
+        String hash_Data = vnp_RequestId + "|" + vnp_Version + "|" + vnp_Command + "|" + vnp_TmnCode + "|" +
+                vnp_TransactionType + "|" + vnp_TxnRef + "|" + vnp_Amount + "|" + vnp_TransactionNo + "|"
+                + vnp_TransactionDate + "|" + vnp_CreateBy + "|" + vnp_CreateDate + "|" + vnp_IpAddr + "|" + vnp_OrderInfo;
+
+        String vnp_SecureHash = vnPayUtil.hmacSHA512(vnPay.getVnp_HashSecret(), hash_Data.toString());
+
+        vnp_Params.put("vnp_SecureHash", vnp_SecureHash);
+
+        URL url = new URL (vnPay.getVnp_apiUrl());
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setDoOutput(true);
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.writeBytes(vnp_Params.toString());
+        wr.flush();
+        wr.close();
+        int responseCode = con.getResponseCode();
+        System.out.println("nSending 'POST' request to URL : " + url);
+        System.out.println("Post Data : " + vnp_Params);
+        System.out.println("Response Code : " + responseCode);
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String output;
+        StringBuffer response = new StringBuffer();
+        while ((output = in.readLine()) != null) {
+            response.append(output);
+        }
+        in.close();
+        System.out.println(response.toString());
+
+        return 0;
+    }
+
     private void updateOrderStatus(List<Order> list) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -350,7 +439,7 @@ public class OrderServiceImpl implements OrderService {
         oid.setStatus(status);
         orderRepo.save(oid);
     }
-    private String createOrderUrl(String vnp_TxnRef,Integer amount, String locale, String orderInfor, String orderType, HttpServletRequest request,String bankcode,String vnp_CurrCode) throws UnsupportedEncodingException {
+    private String createOrderUrl(Integer id,String vnp_TxnRef,Integer amount, String locale, String orderInfor, String orderType, HttpServletRequest request,String bankcode,String vnp_CurrCode) throws UnsupportedEncodingException {
 //        String vnp_TxnRef = vnPayUtil.getRandomNumber(8);
         String vnp_IpAddr = vnPayUtil.getIpAddress(request);
         amount = Integer.parseInt(amount+"") * 100;
@@ -371,7 +460,7 @@ public class OrderServiceImpl implements OrderService {
         } else {
             vnp_Params.put("vnp_Locale", "vn");
         }
-        vnp_Params.put("vnp_ReturnUrl", vnPay.getVnp_Returnurl());
+        vnp_Params.put("vnp_ReturnUrl", vnPay.getVnp_Returnurl()+"/"+id);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
 
@@ -439,16 +528,18 @@ public class OrderServiceImpl implements OrderService {
         return paymentUrl;
     }
     @Override
-    public String queryPayment(String vnp_TxnRef,HttpServletRequest request) throws IOException {
+    public String queryPayment(Integer oid,HttpServletRequest request) throws IOException {
+        Order order = orderRepo.findById(oid).orElseThrow(()->new NotFoundException("Order not found"));
+        String vnp_TxnRef = order.getPaymentCode();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        String vnp_TransDate = formatter.format(order.getExpiredPayment());
         String vnp_RequestId = vnPayUtil.getRandomNumber(8);
         String vnp_Command = "querydr";
         String vnp_TmnCode = vnPay.getVnp_TmnCode();
         String vnp_OrderInfo = "Kiem tra ket qua GD OrderId:" + vnp_TxnRef;
-        String vnp_TransDate = request.getParameter("trans_date");
         String vnp_Version = vnPay.getVnp_Version();
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         String vnp_IpAddr = vnPayUtil.getIpAddress(request);
 //        ObjectMapper mapper1 = mapper;

@@ -32,6 +32,13 @@ public class Constant {
         public static final Boolean ACTIVE = true;
         public static final Boolean NON_ACTIVE = false;
     }
+    public static class AccountStatus{
+        public static Boolean NON_ACTIVE = null;
+        public static Boolean ACTIVE = true;
+        public static Boolean DISABLE = false;
+
+
+    }
     public static class AccountRole{
         public static final String USER = "USER";
         public static final String ADMIN = "ADMIN";

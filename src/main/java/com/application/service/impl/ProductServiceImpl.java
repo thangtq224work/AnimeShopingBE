@@ -91,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
             );
         };
         Page<Product> products = productRepo.findAll(specification, pageable);
-        List<ProductResp> productResps = products.toList().stream().map(i -> new ProductResp(i)).collect(Collectors.toList());
+        List<ProductResp> productResps = products.toList().stream().map(i -> new ProductResp(i,0)).collect(Collectors.toList());
         Pageable discountPageable = PageRequest.of(0,1,Sort.by(Sort.Direction.DESC,"discountStart"));
         Page<Discount> discounts = discountRepo.getDiscountActive(discountPageable,true,new Date());
         if(discounts.getTotalElements() >0){
@@ -117,6 +117,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResp insert(ProductReq dto) {
+        log.info("dto : "+dto.toString());
         Category category = categoryRepo.findById(dto.getCategory()).orElseThrow(() -> new NotFoundException("Category not found"));
         Material material = materialRepo.findById(dto.getMaterial()).orElseThrow(() -> new NotFoundException("Material not found"));
         Supplier supplier = supplierRepo.findById(dto.getSupplier()).orElseThrow(() -> new NotFoundException("Supplier not found"));
@@ -254,7 +255,8 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
         }
-        List<ProductResp> productResps = products.stream().map(i->new ProductResp(i)).collect(Collectors.toList());
+        List<ProductResp> productResps = products.stream().map(i->new ProductResp(i,-1)).collect(Collectors.toList());
+        // cause error if use constructor (Product product) .
         Pageable discountPageable = PageRequest.of(0,1,Sort.by(Sort.Direction.DESC,"discountStart"));
         Page<Discount> discounts = discountRepo.getDiscountActive(discountPageable,true,new Date());
         if(discounts.getTotalElements() >0){
@@ -283,7 +285,7 @@ public class ProductServiceImpl implements ProductService {
 
     private String buildUrl(String resource) {
         UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentServletMapping();
-        builder.pathSegment("product", "show");
+        builder.pathSegment("api","v1", "show");
         builder.queryParam("url", resource);
         return builder.toUriString();
     }

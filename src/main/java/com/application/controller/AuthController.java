@@ -1,13 +1,16 @@
 package com.application.controller;
 
 import com.application.common.ResponseDataTemplate;
-import com.application.dto.request.LoginReq;
-import com.application.dto.request.TokenReq;
+import com.application.dto.request.*;
 import com.application.service.AuthService;
+import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Calendar;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,6 +32,29 @@ public class AuthController {
     @PostMapping("/get-role")
     public ResponseEntity<?> getRole(@RequestBody TokenReq req) {
         return new ResponseEntity<>(ResponseDataTemplate.OK.data(authService.getRole(req)).build(), HttpStatus.OK);
+    }
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterReq registerReq) throws MessagingException {
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(authService.register(registerReq)).build(), HttpStatus.OK);
+    }
+    @GetMapping("/register/confirm")
+    public ResponseEntity<?> registerConfirm(@RequestParam(name = "token") String token) throws MessagingException {
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(authService.registerConfirm(token)).build(), HttpStatus.OK);
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordReq passwordDto) {
+        authService.changePassword(passwordDto);
+        return new ResponseEntity<>(ResponseDataTemplate.OK, HttpStatus.OK);
+    }
+    @GetMapping("/forget-password")
+    public ResponseEntity<?> forgetPassword(@Valid @RequestParam("email") String email) throws MessagingException {
+        authService.forgetPassword(email);
+        return new ResponseEntity<>(ResponseDataTemplate.OK, HttpStatus.OK);
+    }
+    @PostMapping("/confirm-password")
+    public ResponseEntity<?> confirm(@Valid @RequestBody ForgetPasswordReq forgetPasswordto) throws MessagingException {
+        authService.confirm(forgetPasswordto);
+        return new ResponseEntity<>(ResponseDataTemplate.OK, HttpStatus.OK);
     }
 
 }

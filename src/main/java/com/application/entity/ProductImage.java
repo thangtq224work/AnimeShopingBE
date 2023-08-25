@@ -21,5 +21,8 @@ public class ProductImage implements Serializable {
     @JoinColumn(name = "product_id")
     private Product product;
 //    @ManyToOne
-
+    @Override
+    public String toString(){
+        return id+" : " +url;
+    }
 }

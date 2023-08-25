@@ -47,7 +47,7 @@ public class ProductResp {
         this.height = product.getHeight();
         this.length = product.getLength();
         this.width = product.getWidth();
-        this.price = product.getPriceSell();
+        this.price = product.getPrice();
         this.priceSell = product.getPriceSell();
         this.quantity = product.getQuantity();
         this.category = new CategoryDto(product.getCategory());
@@ -59,6 +59,37 @@ public class ProductResp {
                 img.setUrl(buildUrl(img.getUrl()));
                 return new ImageDto(img);
             }).collect(Collectors.toList());
+        }
+    }
+    public ProductResp(Product product,int tmp) {
+        this.id = product.getId();
+        this.name = product.getName();
+        this.description = product.getDescription();
+        this.status = product.getStatus();
+        this.weight = product.getWeight();
+        this.height = product.getHeight();
+        this.length = product.getLength();
+        this.width = product.getWidth();
+        this.price = product.getPriceSell();
+        this.priceSell = product.getPriceSell();
+        this.quantity = product.getQuantity();
+        this.category = new CategoryDto(product.getCategory());
+        this.material = new MaterialDto(product.getMaterial());
+        this.supplier = new SupplierDto(product.getSupplier());
+        this.typeProduct = new TypeProductDto(product.getTypeProduct());
+        if(tmp == -1){
+            if (product.getProductImages() != null) {
+                this.images = product.getProductImages().stream().map((img) -> {
+                    return new ImageDto(img);
+                }).collect(Collectors.toList());
+            }
+        }else{
+            if (product.getProductImages() != null) {
+                this.images = product.getProductImages().stream().map((img) -> {
+                    img.setUrl(buildUrl(img.getUrl()));
+                    return new ImageDto(img);
+                }).collect(Collectors.toList());
+            }
         }
     }
 

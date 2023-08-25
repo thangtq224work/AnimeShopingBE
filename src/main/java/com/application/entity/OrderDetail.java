@@ -23,10 +23,10 @@ public class OrderDetail implements Serializable {
     private Integer quantity;
     private BigDecimal originalPrice;
     private BigDecimal sellPrice;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
     @Enumerated(EnumType.ORDINAL)
