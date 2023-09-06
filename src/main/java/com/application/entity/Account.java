@@ -1,6 +1,7 @@
 package com.application.entity;
 
 import com.application.dto.request.RegisterReq;
+import com.application.dto.response.EmployeeReq;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,7 +26,7 @@ public class Account extends BaseEntity implements Serializable {
     private String email;
     private String phone;
     private String image;
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     private Date birthday;
     private Boolean status;
     private String token;
@@ -41,5 +42,21 @@ public class Account extends BaseEntity implements Serializable {
         this.password = registerReq.getPassword();
         this.phone = registerReq.getPhone();
         this.email = registerReq.getEmail();
+    }
+    public Account (EmployeeReq employeeReq){
+        this.username = employeeReq.getUsername();
+        this.fullName = employeeReq.getFullname();
+        this.phone = employeeReq.getPhone();
+        this.email = employeeReq.getEmail();
+        this.status = employeeReq.getStatus();
+        this.birthday = employeeReq.getBirthday();
+
+    }
+    public void convert(EmployeeReq employeeReq){
+        this.fullName = employeeReq.getFullname();
+        this.phone = employeeReq.getPhone();
+        this.email = employeeReq.getEmail();
+        this.status = employeeReq.getStatus();
+        this.birthday = employeeReq.getBirthday();
     }
 }

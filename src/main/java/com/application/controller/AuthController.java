@@ -44,17 +44,17 @@ public class AuthController {
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordReq passwordDto) {
         authService.changePassword(passwordDto);
-        return new ResponseEntity<>(ResponseDataTemplate.OK, HttpStatus.OK);
+        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
     }
-    @GetMapping("/forget-password")
-    public ResponseEntity<?> forgetPassword(@Valid @RequestParam("email") String email) throws MessagingException {
-        authService.forgetPassword(email);
-        return new ResponseEntity<>(ResponseDataTemplate.OK, HttpStatus.OK);
+    @PostMapping("/forget-password")
+    public ResponseEntity<?> forgetPassword(@Valid @RequestBody() ForgetDataReq forgetDataReq) throws MessagingException {
+        authService.forgetPassword(forgetDataReq);
+        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
     }
     @PostMapping("/confirm-password")
     public ResponseEntity<?> confirm(@Valid @RequestBody ForgetPasswordReq forgetPasswordto) throws MessagingException {
         authService.confirm(forgetPasswordto);
-        return new ResponseEntity<>(ResponseDataTemplate.OK, HttpStatus.OK);
+        return new ResponseEntity<>(ResponseDataTemplate.OK.build(), HttpStatus.OK);
     }
 
 }

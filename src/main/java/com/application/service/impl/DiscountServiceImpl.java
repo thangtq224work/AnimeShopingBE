@@ -56,7 +56,7 @@ public class DiscountServiceImpl implements DiscountService {
     public PageData<DiscountReq> findAll(Pageable pageable, String name, Boolean status, String from, String to){
         Specification<Discount> specification = (root, cq, cb) -> {
             System.out.println("apply status for discount : "+name + " --- "+status);
-            Predicate predicate = buildLikeExp(name) == null?cb.and(): cb.equal(root.get("discountName"),buildLikeExp(name));
+            Predicate predicate = buildLikeExp(name) == null?cb.and(): cb.like(root.get("discountName"),buildLikeExp(name));
 //            Predicate predicate = cb.equal(root.get("discountName"),name);
 //            Predicate predicate = cb.equal(root.get("discountName"),name);
             Predicate statusPredicate = status == null ? cb.equal(root.get("status"),Constant.Status.ACTIVE):cb.equal(root.get("status"),status);

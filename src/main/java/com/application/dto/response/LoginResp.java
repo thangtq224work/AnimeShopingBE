@@ -7,6 +7,7 @@ import java.util.Date;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResp {
+    String username;
     String access_token;
     String refresh_token;
     Date refresh_token_expired;

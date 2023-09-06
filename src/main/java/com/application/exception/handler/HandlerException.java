@@ -10,6 +10,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 @Slf4j
@@ -53,6 +54,11 @@ public class HandlerException {
     @ResponseStatus(HttpStatus.OK)
     public ResponseData handlerEntityAlreadyExistsException(EntityAlreadyExistsException exception) {
         return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message(exception.getMessage()).build();
+    }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseData handlerMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        return new ResponseData.Builder().code(HttpStatus.BAD_REQUEST.value()).message("param invalid").build();
     }
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.OK)

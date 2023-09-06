@@ -26,11 +26,11 @@ public class ProductController {
     @GetMapping("/get")
     public ResponseEntity<?> getAllProperty(@RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
                                             @RequestParam(name = "size", required = false, defaultValue = "5") Integer pageSize,
-                                            @RequestParam(name = "search", required = false, defaultValue = "") String search,
+                                            @RequestParam(name = "search", required = false) String search,
                                             @RequestParam(name = "status", required = false) Integer status) {
         Sort sort = Sort.by(Sort.Direction.DESC, "createAt");
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        return new ResponseEntity<>(productService.getAll(pageable), HttpStatus.OK);
+        return new ResponseEntity<>(productService.getAll(pageable,search,status), HttpStatus.OK);
     }
 
     @GetMapping("/get-all")

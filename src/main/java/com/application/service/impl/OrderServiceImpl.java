@@ -38,7 +38,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
@@ -209,15 +208,34 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResp> getOrder(String user) {
+    public PageData<OrderResp> getOrder(String user, Date from, Date to, Pageable pageable) {
 //        String user = ((Principal)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getName();
 //        log.info(user);
         if(user == null || user.trim().length() == 0){
             throw new NotFoundException(String.format("User %d not found",user));
         }
-        List<Order> orders = orderRepo.getByUsername(user);
-        List<OrderResp> orderResps = orders.stream().map(i->new OrderResp(i)).collect(Collectors.toList());
-        return orderResps;
+        Page<Order> orders = null;
+
+        if(from ==null || to == null || from.after(to)){
+            orders = orderRepo.getByUsername(user,pageable);
+        }else{
+            // from
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(from);
+            calendar.set(Calendar.HOUR,0);
+            calendar.set(Calendar.MINUTE,0);
+            calendar.set(Calendar.SECOND,0);
+            from = calendar.getTime();
+            // to
+            calendar.setTime(to);
+            calendar.set(Calendar.HOUR,23);
+            calendar.set(Calendar.MINUTE,59);
+            calendar.set(Calendar.SECOND,59);
+            to = calendar.getTime();
+            orders = orderRepo.getByUsername(user,from,to,pageable);
+        }
+        List<OrderResp> orderResps = orders.toList().stream().map(i->new OrderResp(i)).collect(Collectors.toList());
+        return PageData.of(orders,orderResps);
     }
 
     @Override

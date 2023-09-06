@@ -5,6 +5,10 @@ import com.application.dto.request.vnpay.IPNReq;
 import com.application.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,15 +16,23 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserOrderController {
     @Autowired
     private OrderService orderService;
-    @PostMapping("/order")
-    public ResponseEntity<?> getOrder(Authentication authentication){
-        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.getOrder(authentication.getName())).build(), HttpStatus.OK);
+    @GetMapping("/order")
+    public ResponseEntity<?> getOrder(Authentication authentication,
+                                      @RequestParam(name = "from",required = false)@DateTimeFormat(pattern = "MM/dd/yyyy")Date from,
+                                      @RequestParam(name = "to",required = false) @DateTimeFormat(pattern = "MM/dd/yyyy") Date to,
+                                      @RequestParam(name = "page",required = false,defaultValue = "1") Integer page,
+                                      @RequestParam(name = "size",required = false,defaultValue = "5") Integer size
+    ){
+        Sort sort = Sort.by(Sort.Direction.DESC, "createAt");
+        Pageable pageable = PageRequest.of(page-1, size, sort);
+        return new ResponseEntity<>(ResponseDataTemplate.OK.data(orderService.getOrder(authentication.getName(),from,to,pageable)).build(), HttpStatus.OK);
     }
     @GetMapping("/order/{id}")
     public ResponseEntity<?> getOrder(@PathVariable("id") Integer id){

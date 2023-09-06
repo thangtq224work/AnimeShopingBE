@@ -53,8 +53,14 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     ProductDiscountRepo productDiscountRepo;
     @Override
-    public PageData<ProductResp> getAll(Pageable pageable) {
-        Page<Product> page = productRepo.findAll(pageable);
+    public PageData<ProductResp> getAll(Pageable pageable,String search,Integer status) {
+        Boolean tmp = status == null?null:(status==1?true:false);
+        Specification<Product> specification = (root, query, criteriaBuilder) ->{
+            Predicate statusPredicate = tmp == null?criteriaBuilder.and():criteriaBuilder.equal(root.get("status"),tmp);
+            Predicate namePredicate = buildLikeExp(search)==null?criteriaBuilder.and():criteriaBuilder.like(root.get("name"),buildLikeExp(search));
+            return  criteriaBuilder.and(statusPredicate,namePredicate);
+        } ;
+        Page<Product> page = productRepo.findAll(specification,pageable);
         log.info("get product");
         return PageData.of(page, page.toList().stream().map(i -> new ProductResp(i)).collect(Collectors.toList()));
     }
@@ -91,7 +97,7 @@ public class ProductServiceImpl implements ProductService {
             );
         };
         Page<Product> products = productRepo.findAll(specification, pageable);
-        List<ProductResp> productResps = products.toList().stream().map(i -> new ProductResp(i,0)).collect(Collectors.toList());
+        List<ProductResp> productResps = products.toList().stream().map(i -> new ProductResp(i,true)).collect(Collectors.toList());
         Pageable discountPageable = PageRequest.of(0,1,Sort.by(Sort.Direction.DESC,"discountStart"));
         Page<Discount> discounts = discountRepo.getDiscountActive(discountPageable,true,new Date());
         if(discounts.getTotalElements() >0){
@@ -255,7 +261,7 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
         }
-        List<ProductResp> productResps = products.stream().map(i->new ProductResp(i,-1)).collect(Collectors.toList());
+        List<ProductResp> productResps = products.stream().map(i->new ProductResp(i,false)).collect(Collectors.toList());
         // cause error if use constructor (Product product) .
         Pageable discountPageable = PageRequest.of(0,1,Sort.by(Sort.Direction.DESC,"discountStart"));
         Page<Discount> discounts = discountRepo.getDiscountActive(discountPageable,true,new Date());
@@ -295,5 +301,12 @@ public class ProductServiceImpl implements ProductService {
             return false;
         }
         return by.equals("priceSell") || by.equals("name") || by.equals("createAt");
+    }
+    private String buildLikeExp(final String query) {
+        if (query == null || query.isEmpty()) {
+            System.out.println("logger");
+            return null;
+        }
+        return "%" + query.trim() + "%";
     }
 }

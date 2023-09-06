@@ -37,6 +37,7 @@ public class ProductDiscountReq {
         private CategoryDto categoryId;
         private SupplierDto manufacturerID;
         private BigDecimal price;
+        private BigDecimal originalPrice;
         private BigDecimal priceSale;
         private Boolean status;
         public ProductForDiscountDto(Product productEntity){
@@ -44,7 +45,10 @@ public class ProductDiscountReq {
             this.figure=productEntity.getName();
             this.description=productEntity.getDescription();
             this.price=productEntity.getPriceSell();
+            this.originalPrice=productEntity.getPrice();
             this.status = productEntity.getStatus();
+            this.categoryId = new CategoryDto(productEntity.getCategory());
+            this.manufacturerID = new SupplierDto(productEntity.getSupplier());
         }
     }
 }

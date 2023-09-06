@@ -61,7 +61,7 @@ public class ProductResp {
             }).collect(Collectors.toList());
         }
     }
-    public ProductResp(Product product,int tmp) {
+    public ProductResp(Product product,boolean forUser) { // forUser : price 30 priceSell 50 => price 50 priceSell 50
         this.id = product.getId();
         this.name = product.getName();
         this.description = product.getDescription();
@@ -70,14 +70,18 @@ public class ProductResp {
         this.height = product.getHeight();
         this.length = product.getLength();
         this.width = product.getWidth();
-        this.price = product.getPriceSell();
+        if(!forUser){
+            this.price = product.getPrice();
+        }else{
+            this.price = product.getPriceSell();
+        }
         this.priceSell = product.getPriceSell();
         this.quantity = product.getQuantity();
         this.category = new CategoryDto(product.getCategory());
         this.material = new MaterialDto(product.getMaterial());
         this.supplier = new SupplierDto(product.getSupplier());
         this.typeProduct = new TypeProductDto(product.getTypeProduct());
-        if(tmp == -1){
+        if(!forUser){ // cause update url image in bd
             if (product.getProductImages() != null) {
                 this.images = product.getProductImages().stream().map((img) -> {
                     return new ImageDto(img);

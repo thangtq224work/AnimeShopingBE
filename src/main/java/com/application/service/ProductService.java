@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ProductService {
-    PageData<ProductResp> getAll(Pageable pageable);
+    PageData<ProductResp> getAll(Pageable pageable,String search,Integer status);
 
     List<ProductResp> getAll();
 

@@ -86,7 +86,7 @@ public class DiscountProductServiceImpl implements DiscountProductService {
     public PageData<ProductDiscountReq> getById(Integer id, Pageable pageable, Integer[] category, String name) {
         DiscountReq discountReq = discountService.findById(id);
         Specification<Product> productEntitySpecification = (root, query, criteriaBuilder) -> {
-            Predicate namePredicate = buildLikeExp(name) == null?criteriaBuilder.and(): criteriaBuilder.equal(root.get("name"),buildLikeExp(name));
+            Predicate namePredicate = buildLikeExp(name) == null?criteriaBuilder.and(): criteriaBuilder.like(root.get("name"),buildLikeExp(name));
             Predicate statusPredicate = criteriaBuilder.isTrue(root.get("status"));
             Predicate categoriesPredicate = (category == null || category.length == 0) ? criteriaBuilder.and():root.get("category").in(category);
           return  criteriaBuilder.and(namePredicate,statusPredicate,categoriesPredicate);

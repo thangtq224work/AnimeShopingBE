@@ -54,6 +54,7 @@ public class AuthService {
         String access_token = jwtService.generateToken(account, scopes);
         String refresh_token = jwtService.generateRefreshToken(account.getUsername());
         LoginResp loginResp = new LoginResp();
+        loginResp.setUsername(account.getUsername());
         loginResp.setAccess_token(access_token);
         loginResp.setAccess_token_expired(jwtService.extractAllClaims(access_token, true).getExpiration());
         loginResp.setRefresh_token(refresh_token);
@@ -180,27 +181,27 @@ public class AuthService {
         return 1;
     }
     public void changePassword(ChangePasswordReq changePasswordReq) {
-        if(changePasswordReq.getNewPassword().equals(changePasswordReq.getConfirmPassword()) == false){
+        if(changePasswordReq.getPassword().equals(changePasswordReq.getRepassword()) == false){
             throw new InvalidException("new password not match");
         }
         Account accountEntity = accountRepo.findByUsername(changePasswordReq.getUsername()).orElseThrow(()-> new NotFoundException("Username or password not exactly"));
         if(encoder.matches(changePasswordReq.getOldPassword(),accountEntity.getPassword())== false){
             throw new InvalidException("Username or password not exactly");
         }
-        accountEntity.setPassword(encoder.encode(changePasswordReq.getNewPassword()));
+        accountEntity.setPassword(encoder.encode(changePasswordReq.getPassword()));
         accountRepo.save(accountEntity);
     }
-    public void forgetPassword(String email) throws MessagingException {
-        Account accountEntity = accountRepo.findByEmail(email).orElseThrow(()-> new NotFoundException("Email not found"));
+    public void forgetPassword(ForgetDataReq data) throws MessagingException {
+        Account accountEntity = accountRepo.findByEmail(data.getEmail()).orElseThrow(()-> new NotFoundException("Email not found"));
         if(accountEntity.getStatus() == Constant.AccountStatus.NON_ACTIVE){
             throw new InvalidException("Account not exists");
         }
         accountEntity.setToken(System.currentTimeMillis()+"_"+ UUID.randomUUID().toString());
         accountEntity.setExpiredToken(new Date(System.currentTimeMillis()+expiredMinute*60*1000));
-        UriComponentsBuilder builder = ServletUriComponentsBuilder.fromHttpUrl(fontEndConfig.getUrl());
+        UriComponentsBuilder builder = ServletUriComponentsBuilder.fromHttpUrl(data.getUrl());
 //        builder.scheme("https");
 //        builder.pathSegment(accountEntity.getToken());
-        builder.pathSegment("forget-password","confirm");
+//        builder.pathSegment("forget-password","confirm");
         builder.queryParam("token",accountEntity.getToken());
         URI newUri = builder.build().toUri();
         System.out.println(newUri.toString());

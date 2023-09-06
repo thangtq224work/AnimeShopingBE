@@ -18,8 +18,8 @@ public class ChangePasswordReq {
     private String oldPassword;
     @NotBlank
     @NotNull
-    private String newPassword;
+    private String password;
     @NotBlank
     @NotNull
-    private String confirmPassword;
+    private String repassword;
 }
