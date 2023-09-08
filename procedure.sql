@@ -1,4 +1,4 @@
-
+USE animeshop;
 drop procedure if exists getTopSellProduct;
 DELIMITER $$
 CREATE PROCEDURE animeshop.getTopSellProduct(
